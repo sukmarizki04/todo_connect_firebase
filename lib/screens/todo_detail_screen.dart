@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:todo_list/functions.dart';
 import 'package:todo_list/models/todo.dart';
 
 class TodoDetailScreen extends StatefulWidget {
@@ -47,25 +48,58 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
               SizedBox(
                 height: 10,
               ),
+              if (_todo.dueDate == null)
+                Card(
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 16),
+                    child: Row(children: [
+                      Expanded(
+                        child: Text(
+                          formatDateTime(_todo.dueDate),
+                        ),
+                      ),
+                      IconButton(
+                          onPressed: () {
+                            _todo = _todo.copyWith(dueDate: DateTime(0));
+                          },
+                          icon: Icon(
+                            Icons.delete,
+                            color: Colors.red,
+                          ))
+                    ]),
+                  ),
+                ),
               Row(
                 children: [
                   dueDateButton('Hari ini', value: _today),
                   dueDateButton('Besok', value: _today.add(Duration(days: 1))),
                 ],
               ),
-              Row(
-                children: [
-                  dueDateButton(
-                    'Minggu ',
-                    value: _today.add(
-                      Duration(
-                        days: (_today.weekday - 7),
+              if (_todo.dueDate == null)
+                Row(
+                  children: [
+                    dueDateButton(
+                      'Minggu depan',
+                      value: _today.add(
+                        Duration(
+                          days: (_today.weekday - 7).abs() + 1,
+                        ),
                       ),
                     ),
-                  ),
-                  dueDateButton('Custom'),
-                ],
-              ),
+                    dueDateButton('Custom', onPressed: () async {
+                      DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: _today,
+                        firstDate: _today,
+                        lastDate: DateTime(_today.year + 100),
+                      );
+
+                      if (pickedDate != null) {
+                        _todo = _todo.copyWith(dueDate: pickedDate);
+                      }
+                    }),
+                  ],
+                ),
               SizedBox(
                 height: 25,
               ),
@@ -73,14 +107,27 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
               SizedBox(
                 height: 10,
               ),
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  border: Border.all(width: 0.5),
-                  borderRadius: BorderRadius.circular(10),
+              GestureDetector(
+                onTap: () {
+                  showDialog(
+                      context: context,
+                      builder: (builder) {
+                        return Dialog(
+                          child: Container(
+                            child: Column(),
+                          ),
+                        );
+                      });
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(15),
+                  decoration: BoxDecoration(
+                    border: Border.all(width: 0.5),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text('Tap Untuk Menambah Untuk Catatan'),
                 ),
-                child: Text('Tap Untuk Menambah Untuk Catatan'),
               ),
               Text('Lokasi'),
               SizedBox(
@@ -130,7 +177,12 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
       {DateTime? value, VoidCallback? onPressed}) {
     return Expanded(
       child: ElevatedButton.icon(
-        onPressed: () {},
+        onPressed: onPressed ??
+            () {
+              setState(() {
+                _todo = _todo.copyWith(dueDate: value);
+              });
+            },
         icon: Icon(Icons.alarm_add),
         label: Text('Hari ini'),
         style: ElevatedButton.styleFrom(
