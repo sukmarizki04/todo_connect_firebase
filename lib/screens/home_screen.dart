@@ -24,21 +24,30 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icon(Icons.exit_to_app))
         ],
       ),
-      body: TodoList(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          //     .listen((data) {
-          //   data.docs.forEach((data) {
-          //     print(data['title']);
-          //   });
-          // });
-          FirebaseFirestore.instance
-              .collection('todos')
-              .doc('yRXTXSA45vclxVvFkNTV')
-              .get()
-              .then((value) => print(value['title']));
-        },
-        child: Icon(Icons.add),
+      body: Container(
+        child: Column(
+          children: [
+            Expanded(
+              child: TodoList(),
+            ),
+            Container(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(hintText: 'saya mau ....'),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: Icon(Icons.add),
+                    style: ElevatedButton.styleFrom(shape: CircleBorder()),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
