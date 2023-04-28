@@ -1,7 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:todo_list/models/todo.dart';
 
 class DatabaseService {
+  String _uid = '';
+  DatabaseService() {
+    if (FirebaseAuth.instance.currentUser != null) {
+      _uid = FirebaseAuth.instance.currentUser!.uid;
+    }
+  }
+  final _todosReference = FirebaseFirestore.instance.collection('todos');
   List<Todo> _todoListFromSnapshot(QuerySnapshot snapshot) {
     return snapshot.docs.map((doc) {
       Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
@@ -20,9 +28,13 @@ class DatabaseService {
   }
 
   Stream<List<Todo>> get todos {
-    return FirebaseFirestore.instance
-        .collection('todos')
-        .snapshots()
-        .map(_todoListFromSnapshot);
+    return _todosReference.snapshots().map(_todoListFromSnapshot);
+  }
+
+  Future addNewTodo(String title) {
+    return _todosReference.add({
+      'title': title,
+      'uid': _uid,
+    });
   }
 }

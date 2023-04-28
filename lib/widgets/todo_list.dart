@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:todo_list/models/todo.dart';
+import 'package:todo_list/screens/todo_detail_screen.dart';
 import 'package:todo_list/services/database_service.dart';
 
 class TodoList extends StatelessWidget {
@@ -27,6 +28,15 @@ class TodoList extends StatelessWidget {
             itemBuilder: (ctx, index) {
               return Card(
                 child: ListTile(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (buider) => TodoDetailScreen(
+                          todo: todoList[index],
+                        ),
+                      ),
+                    );
+                  },
                   leading: IconButton(
                     onPressed: () {},
                     icon: Icon(Icons.circle_outlined),
