@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:todo_list/functions.dart';
+import 'package:todo_list/models/place_location.dart';
 import 'package:todo_list/models/todo.dart';
+import 'package:todo_list/widgets/map_widget.dart';
 
 class TodoDetailScreen extends StatefulWidget {
   const TodoDetailScreen({Key? key, required this.todo}) : super(key: key);
@@ -108,39 +110,69 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
                 height: 10,
               ),
               GestureDetector(
-                onTap: () {
-                  showDialog(
+                onTap: () async {
+                  String? note = await showDialog(
                       context: context,
                       builder: (builder) {
+                        String tempNote = _todo.note;
                         return Dialog(
                           child: Container(
-                            child: Column(),
+                            padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Catatan',
+                                  style: Theme.of(context).textTheme.headline6,
+                                ),
+                                TextFormField(
+                                  initialValue: tempNote,
+                                  maxLines: 6,
+                                  onChanged: (value) {
+                                    tempNote = value;
+                                  },
+                                ),
+                                ElevatedButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(tempNote),
+                                  child: Text('Selelsai'),
+                                )
+                              ],
+                            ),
                           ),
                         );
                       });
+
+                  if (note != null) {
+                    setState(() {
+                      _todo = _todo.copyWith(note: note);
+                    });
+                  }
                 },
-                child: Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(15),
-                  decoration: BoxDecoration(
-                    border: Border.all(width: 0.5),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text('Tap Untuk Menambah Untuk Catatan'),
-                ),
+                child: _todo.note.isEmpty
+                    ? Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.all(15),
+                        decoration: BoxDecoration(
+                          border: Border.all(width: 0.5),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text('Tap Untuk Menambah Untuk Catatan'),
+                      )
+                    : Container(
+                        width: double.infinity,
+                        child: Text(
+                          _todo.note,
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
               ),
               Text('Lokasi'),
+              MapWidget(
+                  placeLocation: PlaceLocation(
+                      latitude: _todo.latitude, longitude: _todo.longitude)),
               SizedBox(
                 height: 10,
-              ),
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  border: Border.all(width: 0.5),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text('Tap Untuk Menambah Lokasi'),
               ),
               SizedBox(
                 height: 25,
@@ -184,7 +216,7 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
               });
             },
         icon: Icon(Icons.alarm_add),
-        label: Text('Hari ini'),
+        label: Text(text),
         style: ElevatedButton.styleFrom(
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(25))),
