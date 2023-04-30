@@ -26,15 +26,15 @@ class LocationService {
     return '';
   }
 
-  static Future<String>  getPlaceAddress(double latitude,double longitude) async{
+  static Future<String> getPlaceAddress(
+      double latitude, double longitude) async {
     final url = '';
     final response = await http.get(Uri.parse(url));
 
-
-    if(response.statusCode == 200){
+    if (response.statusCode == 200) {
       final results = json.decode(response.body);
-      if(results['results'].length > 0){
-        return results['results'][0]['formatted_address']
+      if (results['results'].length > 0) {
+        return results['results'][0]['formatted_address'];
       }
     }
     return '';

@@ -4,8 +4,11 @@ import 'package:todo_list/screens/map_screen.dart';
 import 'package:todo_list/services/location_service.dart';
 
 class MapWidget extends StatelessWidget {
-  const MapWidget({Key? key, required this.placeLocation}) : super(key: key);
+  const MapWidget(
+      {Key? key, required this.placeLocation, required this.setLocationFn})
+      : super(key: key);
   final PlaceLocation placeLocation;
+  final Function(PlaceLocation placeLocation) setLocationFn;
   @override
   Widget build(BuildContext context) {
     String previewImageUrl = LocationService.generateMapUrlImage(
@@ -14,7 +17,10 @@ class MapWidget extends StatelessWidget {
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (builder) => MapScreen(initialLocation: placeLocation),
+            builder: (builder) => MapScreen(
+              initialLocation: placeLocation,
+              setLocationFn: setLocationFn,
+            ),
           ),
         );
       },

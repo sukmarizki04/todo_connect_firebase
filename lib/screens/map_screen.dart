@@ -5,9 +5,12 @@ import 'package:todo_list/models/place_location.dart';
 import 'package:todo_list/services/location_service.dart';
 
 class MapScreen extends StatefulWidget {
-  const MapScreen({Key? key, required this.initialLocation}) : super(key: key);
+  const MapScreen(
+      {Key? key, required this.initialLocation, required this.setLocationFn})
+      : super(key: key);
 
   final PlaceLocation initialLocation;
+  final Function(PlaceLocation placeLocation) setLocationFn;
 
   @override
   State<MapScreen> createState() => _MapScreenState();
@@ -27,11 +30,16 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future setLocation(LatLng position, {bool moveCamera = false}) async {
+    String tempAddress = await LocationService.getPlaceAddress(
+        position.latitude, position.longitude);
+    Future.delayed(Duration(milliseconds: 500));
     if (moveCamera)
       _googleMapController.moveCamera(CameraUpdate.newLatLng(position));
+
     setState(() {
       _pickedLocation = position;
       //address
+      _address = tempAddress;
     });
   }
 
@@ -46,7 +54,6 @@ class _MapScreenState extends State<MapScreen> {
               widget.initialLocation.longitude),
           moveCamera: true);
     }
-
     super.initState();
   }
 
@@ -56,22 +63,42 @@ class _MapScreenState extends State<MapScreen> {
       appBar: AppBar(
         title: Text(_address),
       ),
-      body: GoogleMap(
-        initialCameraPosition: CameraPosition(
-          target: _pickedLocation,
-          zoom: 13,
-        ),
-        markers: {
-          Marker(
-            markerId: MarkerId('pickedLocation'),
-            position: _pickedLocation,
+      body: Stack(
+        children: [
+          GoogleMap(
+            initialCameraPosition: CameraPosition(
+              target: _pickedLocation,
+              zoom: 13,
+            ),
+            markers: {
+              Marker(
+                markerId: MarkerId('pickedLocation'),
+                position: _pickedLocation,
+              ),
+            },
+            onMapCreated: (GoogleMapController googleMapController) {
+              _googleMapController = googleMapController;
+            },
+            onTap: setLocation,
+            myLocationEnabled: true,
           ),
-        },
-        onMapCreated: (GoogleMapController googleMapController) {
-          _googleMapController = googleMapController;
-        },
-        onTap: setLocation,
-        myLocationEnabled: true,
+          Positioned(
+              bottom: 0,
+              left: 50,
+              right: 50,
+              child: ElevatedButton(
+                onPressed: () {
+                  widget.setLocationFn(
+                    PlaceLocation(
+                        latitude: _pickedLocation.latitude,
+                        longitude: _pickedLocation.longitude,
+                        address: _address),
+                  );
+                  Navigator.of(context).pop();
+                },
+                child: Text('Set Lokasi'),
+              ))
+        ],
       ),
     );
   }
