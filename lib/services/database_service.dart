@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:todo_list/models/data_user.dart';
 import 'package:todo_list/models/todo.dart';
 
 class DatabaseService {
@@ -10,6 +14,8 @@ class DatabaseService {
     }
   }
   final _todosReference = FirebaseFirestore.instance.collection('todos');
+  final _dataUserReference = FirebaseFirestore.instance.collection('users');
+
   List<Todo> _todoListFromSnapshot(QuerySnapshot snapshot) {
     return snapshot.docs.map((doc) {
       Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
@@ -34,9 +40,25 @@ class DatabaseService {
         .map(_todoListFromSnapshot);
   }
 
+  DataUser _dataUserFromSnapshot(DocumentSnapshot snapshot) {
+    Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+
+    return DataUser(
+      username: data['username'] ?? '',
+      email: data['email'] ?? '',
+      phone: data['phone'] ?? '',
+      userImageUrl: data['user_image_url'] ?? '',
+    );
+  }
+
+  Stream<DataUser> get dataUser {
+    return _dataUserReference.doc(_uid).snapshots().map(_dataUserFromSnapshot);
+  }
+
   Future addNewTodo(String title) {
     return _todosReference.add({
       'title': title,
+      'completed': false,
       'uid': _uid,
     });
   }
@@ -61,5 +83,25 @@ class DatabaseService {
 
   Future deleteTodo(String docId) {
     return _todosReference.doc(docId).delete();
+  }
+
+  Future updateUsername(String username) {
+    return _dataUserReference.doc(_uid).update({
+      'username': username,
+      'updated_at': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future uploadUserImage(File file) async {
+    final ref =
+        FirebaseStorage.instance.ref().child('user_data').child(_uid + '.jpg');
+    await ref.putFile(file);
+
+    final url = await ref.getDownloadURL();
+
+    await _dataUserReference.doc(_uid).update({
+      'user_image_url': url,
+      'updated_at': FieldValue.serverTimestamp(),
+    });
   }
 }

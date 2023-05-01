@@ -37,9 +37,27 @@ class _TodoDetailScreenState extends State<TodoDetailScreen> {
         title: Text('Todo Detail'),
         actions: [
           IconButton(
-            onPressed: () {
-              DatabaseService().deleteTodo(_todo.id);
-              Navigator.of(context).pop();
+            onPressed: () async {
+              bool? isDelete = await showDialog(
+                  context: context,
+                  builder: (builder) {
+                    return AlertDialog(
+                      title: Text('Hapus Todo?'),
+                      content: Text('Apkah Kamu yakin menghapusnya?'),
+                      actions: [
+                        TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: Text('Ya')),
+                        TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: Text('TIdak')),
+                      ],
+                    );
+                  });
+              if (isDelete != null && isDelete == true) {
+                DatabaseService().deleteTodo(_todo.id);
+                Navigator.of(context).pop();
+              }
             },
             icon: Icon(
               Icons.delete,
