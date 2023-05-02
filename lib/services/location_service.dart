@@ -1,9 +1,8 @@
 import 'dart:convert';
-
 import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
 
-const GOOGLE_API_KEY = '';
+const GOOGLE_API_KEY = '  ';
 
 class LocationService {
   static Future<LocationData?> getUserLocation() async {

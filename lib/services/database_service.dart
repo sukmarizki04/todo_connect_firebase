@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -35,7 +34,9 @@ class DatabaseService {
 
   Stream<List<Todo>> get todos {
     return _todosReference
+        .where('uid', isEqualTo: _uid)
         .orderBy('completed')
+        .orderBy('due_date')
         .snapshots()
         .map(_todoListFromSnapshot);
   }
@@ -58,6 +59,7 @@ class DatabaseService {
   Future addNewTodo(String title) {
     return _todosReference.add({
       'title': title,
+      'due_date': null,
       'completed': false,
       'uid': _uid,
     });
